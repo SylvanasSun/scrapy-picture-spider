@@ -5,6 +5,7 @@ from scrapy.contrib.linkextractors.lxmlhtml import LxmlLinkExtractor
 from scrapy.extensions.closespider import CloseSpider
 from scrapy.http import Request, FormRequest
 from pixiv_spider.items import PixivSpiderItem
+from bs4 import BeautifulSoup
 
 
 class PixivSpider(CrawlSpider):
@@ -53,6 +54,7 @@ class PixivSpider(CrawlSpider):
         # function from_response for simulate a user login
         return FormRequest.from_response(
             response,
+            url='https://accounts.pixiv.net/login',
             meta={'cookiejar': response.meta['cookiejar']},
             headers=self.headers,
             formdata={
@@ -65,4 +67,11 @@ class PixivSpider(CrawlSpider):
             dont_filter=True
         )
 
-    
+    def after_login(self,response):
+        # no jump to index represent login failed
+        if response.url == 'https://accounts.pixiv.net/login':
+            raise CloseSpider('username or password is invalid!')
+        for url in self.start_urls:
+            yield self.make_requests_from_url(url)
+
+   
