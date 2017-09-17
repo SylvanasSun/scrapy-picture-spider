@@ -11,5 +11,6 @@ import scrapy
 class PixivSpiderItem(scrapy.Item):
     author = scrapy.Field()
     release_date = scrapy.Field()
+    img_id = scrapy.Field()
     img_name = scrapy.Field()
     img_src = scrapy.Field()

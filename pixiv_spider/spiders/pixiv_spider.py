@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
+import urllib
+import socket
 from scrapy.contrib.spiders import CrawlSpider, Rule
 from scrapy.contrib.linkextractors.lxmlhtml import LxmlLinkExtractor
 from scrapy.extensions.closespider import CloseSpider
@@ -15,7 +17,7 @@ class PixivSpider(CrawlSpider):
 
     rules = (
         # just crawl daily recommend
-        Rule(LxmlLinkExtractor(allow=('.+?mode=daily.*',)), callback='parse_page', follow=True)
+        Rule(LxmlLinkExtractor(allow=('.+\?mode=daily.*',)), callback='parse_page', follow=True)
     )
 
     headers = {
@@ -67,11 +69,49 @@ class PixivSpider(CrawlSpider):
             dont_filter=True
         )
 
-    def after_login(self,response):
+    def after_login(self, response):
         # no jump to index represent login failed
         if response.url == 'https://accounts.pixiv.net/login':
             raise CloseSpider('username or password is invalid!')
         for url in self.start_urls:
             yield self.make_requests_from_url(url)
 
-   
+    def parser_page(self, response):
+        print('Preparing parse, [url]: %s ' % response.url)
+        soup = BeautifulSoup(response.body, 'lxml')
+        div_list = soup.find_all(attrs={'class': 'ranking-image-item'})
+        items = []
+        # set timeout of open url is 5 second
+        socket.setdefaulttimeout(5)
+        for div in div_list:
+            img_detail_url = self.allowed_domains + div.find('a')['href']
+            print('Preparing parse image: %s ' % img_detail_url)
+            # parsing and packing image detail
+            self.packing_item(img_detail_url, items)
+        return items
+
+    def packing_item(self, img_detail_url, items):
+        try:
+            img_detail_page = urllib.request.urlopen(img_detail_url).read()
+        except urllib.error.URLError as e:
+            print(e)
+            img_detail_page = urllib.request.urlopen(img_detail_url).read()
+        img_detail_soup = BeautifulSoup(img_detail_page, 'lxml')
+        item = PixivSpiderItem()
+        # extract url of image src
+        img_src = img_detail_soup.find(attrs={'class': 'original-image'})['data-src']
+        # extract date of uri
+        date_start_index = img_src.find('original') + 13
+        img_date = img_src[date_start_index:date_start_index + 10].replace('/', '-')
+        # extract image id of uri
+        img_id = img_src[img_src.rfind('/') + 1:img_src.rfind('_')]
+        # extract image name and author
+        img_name = img_detail_soup.find('div', attrs={'class': 'works_display'}).find('img')['alt']
+        author = img_detail_soup.find('a', attrs={'class': 'user-name'}).text
+        # packing to item
+        item['img_src'] = img_src
+        item['author'] = author
+        item['release_date'] = img_date
+        item['img_id'] = img_id
+        item['img_name'] = img_name
+        items.append(item)
