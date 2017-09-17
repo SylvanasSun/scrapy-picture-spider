@@ -9,6 +9,7 @@ import scrapy
 
 
 class PixivSpiderItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
+    author = scrapy.Field()
+    release_date = scrapy.Field()
+    img_name = scrapy.Field()
+    img_src = scrapy.Field()
