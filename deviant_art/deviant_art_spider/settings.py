@@ -24,6 +24,9 @@ ROBOTSTXT_OBEY = False
 # It default path is current dir
 IMAGE_STORE = '.'
 
+# Scrapy close when downloaded image equal to this attribute
+MAXIMUM_IMAGE_NUMBER = 10000
+
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
