@@ -10,6 +10,9 @@ import urllib
 
 class PixivSpiderPipeline(object):
     def process_item(self, item, spider):
+        print('[Preparing Download]: %s ' % item)
+        if item is None:
+            return item
         img_final_name = item['img_name'] + '-' + item['author'] + '-' + item['img_id'] + '.jpg'
         img_date = item['release_date']
         year = img_date[:img_date.find('-')]
