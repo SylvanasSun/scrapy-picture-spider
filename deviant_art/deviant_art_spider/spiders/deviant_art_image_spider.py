@@ -1,26 +1,17 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 import socket
-import threading
 
 import requests
 from bs4 import BeautifulSoup
+# this import package is right,if PyCharm give out warning please ignore
+from deviant_art_spider.items import DeviantArtSpiderItem
 from scrapy.contrib.linkextractors.lxmlhtml import LxmlLinkExtractor
 from scrapy.contrib.spiders import CrawlSpider, Rule
 from scrapy.http import Request
 
-from deviant_art_spider.items import DeviantArtSpiderItem
-
 # global time out is 10 second
 socket.setdefaulttimeout(10)
-
-# recording number of crawl image
-image_counter = 0
-
-# recording group id(each 1000 image is same group)
-group_counter = 0
-
-lock = threading.Lock()
 
 '''
     This class is spider for url of https://www.deviantart.com 
@@ -91,8 +82,15 @@ class DeviantArtImageSpider(CrawlSpider):
             return None
 
     def packing_item(self, item, soup):
-        # this constant from settings.py which represent max number for crawl image
-        pass
+        self.logger.debug('[PREPARING PACKING ITEM]..........')
+        img = soup.find('img', class_='dev-content-full')
+        img_alt = img['alt']
+        item['image_name'] = img_alt[:img_alt.find('by') - 1]
+        item['author'] = img_alt[img_alt.find('by') + 2:]
+        item['image_id'] = img['data-embed-id']
+        item['image_src'] = img['src']
+        self.logger.debug('[PACKING ITEM FINISHED] %s ' % item)
+        return item
 
     def _init_soup(self, response, log):
         url = response.url
