@@ -54,19 +54,13 @@ class DeviantArtImageSpider(CrawlSpider):
     }
 
     def parse_page(self, response):
-        url = response.url
-        self.headers['Referer'] = url
-        self.logger.debug('[PREPARING PARSE PAGE] %s ' % url)
-        body = requests.get(url, headers=self.headers).content
-        soup = BeautifulSoup(body, 'lxml')
+        soup = self._init_soup(response, '[PREPARING PARSE PAGE] %s ')
         if soup is None:
-            self.logger.debug('[PARSE FAILED] read %s body failed' % url)
             return None
         all_a_tag = soup.find_all('a', class_='torpedo-thumb-link')
         if all_a_tag is not None and len(all_a_tag) > 0:
             for a_tag in all_a_tag:
                 detail_link = a_tag['href']
-                self.logger.debug('[PREPARING PARSE DETAIL PAGE] %s ' % detail_link)
                 request = Request(
                     url=detail_link,
                     headers=self.headers,
@@ -79,4 +73,36 @@ class DeviantArtImageSpider(CrawlSpider):
             return None
 
     def parse_detail_page(self, response):
+        soup = self._init_soup(response, '[PREPARING DETAIL PAGE] %s ')
+        if soup is None:
+            return None
+        yield self.packing_item(response.meta['item'], soup)
+        # continue search more detail page of current page link
+        all_div_tag = soup.find_all('div', class_='tt-crop thumb')
+        if all_div_tag is not None and len(all_div_tag) > 0:
+            for div_tag in all_div_tag:
+                detail_link = div_tag.find('a')['href']
+                request = Request(
+                    url=detail_link,
+                    headers=self.headers,
+                    callback=self.parse_detail_page
+                )
+                request.meta['item'] = DeviantArtSpiderItem()
+                yield request
+        else:
+            self.logger.debug('[PARSE FAILED] get <div> tag failed')
+            return None
+
+    def packing_item(self, item, soup):
         pass
+
+    def _init_soup(self, response, log):
+        url = response.url
+        self.headers['Referer'] = url
+        self.logger.debug(log % url)
+        body = requests.get(url, headers=self.headers).content
+        soup = BeautifulSoup(body, 'lxml')
+        if soup is None:
+            self.logger.debug('[PARSE FAILED] read %s body failed' % url)
+            return None
+        return soup
