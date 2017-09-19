@@ -9,6 +9,7 @@ from deviant_art_spider.items import DeviantArtSpiderItem
 from scrapy.contrib.linkextractors.lxmlhtml import LxmlLinkExtractor
 from scrapy.contrib.spiders import CrawlSpider, Rule
 from scrapy.http import Request
+from pybloom_live import BloomFilter
 
 # global time out is 10 second
 socket.setdefaulttimeout(10)
@@ -41,6 +42,10 @@ class DeviantArtImageSpider(CrawlSpider):
         "Referer": "https://www.deviantart.com/"
     }
 
+    def __init__(self, *args, **kwargs):
+        super(DeviantArtImageSpider, self).__init__(*args, **kwargs)
+        self.filter = BloomFilter(capacity=self.settings['MAXIMUM_IMAGE_NUMBER'] * 1.5, error_rate=0.001)
+
     def parse_page(self, response):
         soup = self._init_soup(response, '[PREPARING PARSE PAGE]')
         if soup is None:
@@ -61,10 +66,14 @@ class DeviantArtImageSpider(CrawlSpider):
             return None
 
     def parse_detail_page(self, response):
+        if response.url in self.filter:
+            self.logger.debug('[REPETITION] already parse url %s ' % response.url)
+            return None
         soup = self._init_soup(response, '[PREPARING DETAIL PAGE]')
         if soup is None:
             return None
         yield self.packing_item(response.meta['item'], soup)
+        self.filter.add(response.url)
         # continue search more detail page of current page link
         all_div_tag = soup.find_all('div', class_='tt-crop thumb')
         if all_div_tag is not None and len(all_div_tag) > 0:
