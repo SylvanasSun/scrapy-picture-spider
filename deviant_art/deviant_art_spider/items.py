@@ -13,5 +13,3 @@ class DeviantArtSpiderItem(scrapy.Item):
     image_name = scrapy.Field()
     image_id = scrapy.Field()
     image_src = scrapy.Field()
-    # each one thousand picture belong the same group
-    group_id = scrapy.Field()
