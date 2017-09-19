@@ -20,7 +20,11 @@ class PixivSpider(CrawlSpider):
 
     rules = (
         # just crawl daily recommend
-        Rule(LxmlLinkExtractor(allow=('.+\?mode=daily', '.+\?mode=daily&date=*\d+',)), callback='parse_page'),
+        Rule(LxmlLinkExtractor(
+            allow=('.+\?mode=daily', '.+\?mode=daily&date=*\d+',)),
+            callback='parse_page',
+            follow=True
+        ),
     )
 
     headers = {
