@@ -29,10 +29,6 @@ class ProxiesSpider(object):
         self.tocrawl_url.append(self.seed)
         page_counter = 1
         while self.tocrawl_url:
-            # the parsing speed is too fast bring bug
-            # beautiful soup parse html fail
-            # so need sleep 1 second
-            # time.sleep(1)
             if page_counter > self.max_page_number:
                 break
             url = self.tocrawl_url.pop()
