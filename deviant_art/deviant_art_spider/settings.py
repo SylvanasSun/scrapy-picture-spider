@@ -22,7 +22,7 @@ ROBOTSTXT_OBEY = False
 
 # The attribute is your path for download image
 # It default path is current dir
-IMAGE_STORE = '.'
+IMAGES_STORE = '.'
 
 # Scrapy close when downloaded image equal to this attribute
 MAXIMUM_IMAGE_NUMBER = 10000

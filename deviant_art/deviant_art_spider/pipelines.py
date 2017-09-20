@@ -60,4 +60,4 @@ class DeviantArtSpiderPipeline(object):
     @classmethod
     def from_crawler(cls, crawler):
         settings = crawler.settings
-        return cls(settings['IMAGE_STORE'], settings['MAXIMUM_IMAGE_NUMBER'])
+        return cls(settings['IMAGES_STORE'], settings['MAXIMUM_IMAGE_NUMBER'])
