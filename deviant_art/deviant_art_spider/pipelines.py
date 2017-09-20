@@ -51,7 +51,7 @@ class DeviantArtSpiderPipeline(object):
                 dir_counter += 1
         finally:
             lock.release()
-        path = os.path.abspath(self.IMAGE_STORE).join('crawl_image').join('dir-' + str(dir_counter))
+        path = os.path.abspath(self.IMAGE_STORE).join('crawl_images').join('dir-' + str(dir_counter))
         if not os.path.isdir(path):
             os.mkdir(path)
             print('[CREATED DIR] %s ' % path)

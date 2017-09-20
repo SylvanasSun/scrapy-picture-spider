@@ -4,8 +4,42 @@
 #
 # See documentation in:
 # http://doc.scrapy.org/en/latest/topics/spider-middleware.html
-
+import time
 from scrapy import signals
+import os
+import random
+
+
+class ProxyMiddleware(object):
+    def process_request(self, request, spider):
+        proxy = self.get_proxy(self.make_path())
+        print('Acquire proxy %s ' % proxy)
+        request.meta['proxy'] = proxy
+
+    def process_response(self, request, response, spider):
+        if response.status != 200:
+            proxy = self.get_proxy(self.make_path())
+            print('Response status code is not 200,try reset request proxy %s ' % proxy)
+            request.meta['proxy'] = proxy
+            return request
+        return response
+
+    def make_path(self):
+        current = os.path.abspath('.')
+        parent = os.path.dirname(current)
+        return os.path.dirname(parent) + '\proxies.txt'
+
+    def get_proxy(self, path):
+        if not os.path.isfile(path):
+            print('[LOADING PROXY] loading proxies failed proxies file is not exist')
+        while True:
+            with open(path, 'r') as f:
+                proxies = f.readlines()
+            if proxies:
+                break
+            else:
+                time.sleep(1)
+        return random.choice(proxies).strip()
 
 
 class DeviantArtSpiderSpiderMiddleware(object):

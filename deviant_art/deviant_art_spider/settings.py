@@ -33,6 +33,15 @@ ITEM_PIPELINES = {
     'deviant_art_spider.pipelines.DeviantArtSpiderPipeline': 300,
 }
 
+# Enable or disable downloader middlewares
+# See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
+DOWNLOADER_MIDDLEWARES = {
+    # 'deviant_art_spider.middlewares.MyCustomDownloaderMiddleware': 543,
+    'scrapy.contrib.downloadermiddleware.httpproxy.HttpProxyMiddleware': 543,
+    'deviant_art_spider.middlewares.ProxyMiddleware': 125
+}
+
+
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 # CONCURRENT_REQUESTS = 32
 
@@ -60,12 +69,6 @@ ITEM_PIPELINES = {
 # See http://scrapy.readthedocs.org/en/latest/topics/spider-middleware.html
 # SPIDER_MIDDLEWARES = {
 #    'deviant_art_spider.middlewares.DeviantArtSpiderSpiderMiddleware': 543,
-# }
-
-# Enable or disable downloader middlewares
-# See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
-# DOWNLOADER_MIDDLEWARES = {
-#    'deviant_art_spider.middlewares.MyCustomDownloaderMiddleware': 543,
 # }
 
 # Enable or disable extensions
