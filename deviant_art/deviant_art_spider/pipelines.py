@@ -27,7 +27,7 @@ class DeviantArtSpiderPipeline(object):
             raise DropItem('Item is null')
         dir_path = self.make_dir()
         image_final_name = item['image_name'] + '-' + item['image_id'] + '-by@' + item['author'] + '.jpg'
-        dest_path = os.path.abspath(dir_path).join(image_final_name)
+        dest_path = os.path.join(dir_path, image_final_name)
         self.download_image(item['image_src'], dest_path)
         self.image_max_counter += 1
         if self.image_max_counter >= self.MAXIMUM_IMAGE_NUMBER:
@@ -35,11 +35,14 @@ class DeviantArtSpiderPipeline(object):
         return item
 
     def make_dir(self):
+        print('[IMAGE_CURRENT NUMBER] %d ' % self.image_max_counter)
         if self.image_max_counter % 1000 == 0:
             self.dir_counter += 1
-        path = os.path.abspath(self.IMAGE_STORE).join('crawl_images').join('dir-' + str(self.dir_counter))
-        if not os.path.isdir(path):
-            os.mkdir(path)
+        path = os.path.abspath(self.IMAGE_STORE)
+        path = os.path.join(path, 'crawl_images')
+        path = os.path.join(path, 'dir-' + str(self.dir_counter))
+        if not os.path.exists(path):
+            os.makedirs(path)
             print('[CREATED DIR] %s ' % path)
         return path
 
