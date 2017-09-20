@@ -42,9 +42,7 @@ class DeviantArtImageSpider(CrawlSpider):
         "Referer": "https://www.deviantart.com/"
     }
 
-    def __init__(self, *args, **kwargs):
-        super(DeviantArtImageSpider, self).__init__(*args, **kwargs)
-        self.filter = BloomFilter(capacity=self.settings['MAXIMUM_IMAGE_NUMBER'] * 1.5, error_rate=0.001)
+    filter = BloomFilter(capacity=15000)
 
     def parse_page(self, response):
         soup = self._init_soup(response, '[PREPARING PARSE PAGE]')

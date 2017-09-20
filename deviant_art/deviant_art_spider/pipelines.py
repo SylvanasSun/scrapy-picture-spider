@@ -10,21 +10,17 @@ import threading
 import os
 from scrapy.exceptions import DropItem, CloseSpider
 
-lock = threading.Lock()
-
 
 class DeviantArtSpiderPipeline(object):
-    # recording number of downloaded image
-    image_max_counter = 0
-
-    # recording dir name number,it each one thousand add 1
-    dir_counter = 0
-
     def __init__(self, IMAGE_STORE, MAXIMUM_IMAGE_NUMBER):
         if IMAGE_STORE is None or MAXIMUM_IMAGE_NUMBER is None:
             raise CloseSpider('Pipeline load settings failed')
         self.IMAGE_STORE = IMAGE_STORE
         self.MAXIMUM_IMAGE_NUMBER = MAXIMUM_IMAGE_NUMBER
+        # recording number of downloaded image
+        self.image_max_counter = 0
+        # recording dir name number,it each one thousand add 1
+        self.dir_counter = 0
 
     def process_item(self, item, spider):
         if item is None:
@@ -33,25 +29,15 @@ class DeviantArtSpiderPipeline(object):
         image_final_name = item['image_name'] + '-' + item['image_id'] + '-by@' + item['author'] + '.jpg'
         dest_path = os.path.abspath(dir_path).join(image_final_name)
         self.download_image(item['image_src'], dest_path)
-        global image_max_counter
-        lock.acquire()
-        try:
-            image_max_counter += 1
-            if image_max_counter >= self.MAXIMUM_IMAGE_NUMBER:
-                raise CloseSpider('Current downloaded image already equal maximum number')
-        finally:
-            lock.release()
+        self.image_max_counter += 1
+        if self.image_max_counter >= self.MAXIMUM_IMAGE_NUMBER:
+            raise CloseSpider('Current downloaded image already equal maximum number')
         return item
 
     def make_dir(self):
-        global image_max_counter, dir_counter
-        lock.acquire()
-        try:
-            if image_max_counter % 1000 == 0:
-                dir_counter += 1
-        finally:
-            lock.release()
-        path = os.path.abspath(self.IMAGE_STORE).join('crawl_images').join('dir-' + str(dir_counter))
+        if self.image_max_counter % 1000 == 0:
+            self.dir_counter += 1
+        path = os.path.abspath(self.IMAGE_STORE).join('crawl_images').join('dir-' + str(self.dir_counter))
         if not os.path.isdir(path):
             os.mkdir(path)
             print('[CREATED DIR] %s ' % path)
@@ -69,6 +55,6 @@ class DeviantArtSpiderPipeline(object):
                            % (threading.current_thread().name, response.status_code))
 
     @classmethod
-    def from_settings(cls, crawler):
+    def from_crawler(cls, crawler):
         settings = crawler.settings
         return cls(settings['IMAGE_STORE'], settings['MAXIMUM_IMAGE_NUMBER'])

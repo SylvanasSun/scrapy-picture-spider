@@ -66,7 +66,7 @@ class ProxiesSpider(object):
         for key in proxy:
             proxies[str(proxy[key])] = key
         try:
-            if requests.get('https://www.baidu.com/', proxies=proxies, timeout=2).status_code == 200:
+            if requests.get('https://www.deviantart.com/', proxies=proxies, timeout=2).status_code == 200:
                 print('verify proxy success %s ' % proxies)
                 self.verified_proxies.append(proxy)
         except:
