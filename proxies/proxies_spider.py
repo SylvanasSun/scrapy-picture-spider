@@ -2,19 +2,18 @@
 # -*- coding:utf-8 -*-
 
 import os
-import time
 
 import requests
 from bs4 import BeautifulSoup
 
 '''
-    This module for crawl ip in the http://www.kuaidaili.com/ and download to computer 
+    This module for crawl ip in the http://www.ip3366.net/free/ and download to computer 
 '''
 
 
 class ProxiesSpider(object):
     def __init__(self, max_page_number=10):
-        self.seed = 'http://www.kuaidaili.com/free/inha/'
+        self.seed = 'http://www.ip3366.net/free/'
         self.max_page_number = max_page_number
         self.crawled_proxies = []
         self.verified_proxies = []
@@ -33,19 +32,19 @@ class ProxiesSpider(object):
             # the parsing speed is too fast bring bug
             # beautiful soup parse html fail
             # so need sleep 1 second
-            time.sleep(1)
+            # time.sleep(1)
             if page_counter > self.max_page_number:
                 break
             url = self.tocrawl_url.pop()
-            body = requests.get(url=url, headers=self.headers).content
+            body = requests.get(url=url, headers=self.headers, params={'page': page_counter}).content
             soup = BeautifulSoup(body, 'lxml')
             if soup is None:
                 print('PARSE PAGE FAILED.......')
                 continue
             self.parse_page(soup)
-            print('Parse page %s done ' % url)
+            print('Parse page %s done' % (url + '?page=' + str(page_counter)))
             page_counter += 1
-            self.tocrawl_url.append(self.seed + str(page_counter))
+            self.tocrawl_url.append(url)
         self.verify_proxies()
         self.download()
 
@@ -53,9 +52,9 @@ class ProxiesSpider(object):
         table = soup.find('table', class_='table table-bordered table-striped')
         tr_list = table.tbody.find_all('tr')
         for tr in tr_list:
-            ip = tr.find('td', attrs={'data-title': 'IP'}).text
-            port = tr.find('td', attrs={'data-title': 'PORT'}).text
-            protocol = tr.find('td', attrs={'data-title': '类型'}).text.lower()
+            ip = tr.contents[1].text
+            port = tr.contents[3].text
+            protocol = tr.contents[7].text.lower()
             url = protocol + '://' + ip + ':' + port
             self.crawled_proxies.append({url: protocol})
             print('Add url %s to crawled_proxies' % url)
