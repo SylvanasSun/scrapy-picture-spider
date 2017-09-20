@@ -38,7 +38,7 @@ ITEM_PIPELINES = {
 DOWNLOADER_MIDDLEWARES = {
     # 'deviant_art_spider.middlewares.MyCustomDownloaderMiddleware': 543,
     # 'scrapy.contrib.downloadermiddleware.httpproxy.HttpProxyMiddleware': 543,
-    # 'deviant_art_spider.middlewares.ProxyMiddleware': 125
+    # 'deviant_art_spider.middlewares.ProxyMiddleware': 540
 }
 
 
