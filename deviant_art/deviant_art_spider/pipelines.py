@@ -48,7 +48,7 @@ class DeviantArtSpiderPipeline(object):
 
     def download_image(self, src, dest):
         print('[Thread %s] preparing download image.....' % threading.current_thread().name)
-        response = requests.get(src)
+        response = requests.get(src, timeout=2)
         if response.status_code == 200:
             with open(dest, 'wb') as f:
                 f.write(response.content)

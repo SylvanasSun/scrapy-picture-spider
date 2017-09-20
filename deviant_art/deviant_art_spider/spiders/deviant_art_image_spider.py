@@ -1,18 +1,14 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
-import socket
 
 import requests
 from bs4 import BeautifulSoup
 # this import package is right,if PyCharm give out warning please ignore
 from deviant_art_spider.items import DeviantArtSpiderItem
+from pybloom_live import BloomFilter
 from scrapy.contrib.linkextractors.lxmlhtml import LxmlLinkExtractor
 from scrapy.contrib.spiders import CrawlSpider, Rule
 from scrapy.http import Request
-from pybloom_live import BloomFilter
-
-# global time out is 10 second
-socket.setdefaulttimeout(10)
 
 '''
     This class is spider for url of https://www.deviantart.com 
@@ -103,7 +99,7 @@ class DeviantArtImageSpider(CrawlSpider):
         url = response.url
         self.headers['Referer'] = url
         self.logger.debug(log + ' ' + url)
-        body = requests.get(url, headers=self.headers).content
+        body = requests.get(url, headers=self.headers, timeout=2).content
         soup = BeautifulSoup(body, 'lxml')
         if soup is None:
             self.logger.debug('[PARSE FAILED] read %s body failed' % url)
